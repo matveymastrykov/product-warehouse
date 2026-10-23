@@ -21,11 +21,25 @@ def show_stock():
             SELECT
                 products.name,
                 categories.name,
-                COALESCE(SUM(delivery_items.quantity), 0)
+                COALESCE(deliveries.quantity, 0)
+                    - COALESCE(writeoffs.quantity, 0)
             FROM products
-            JOIN categories USING (category_id)
-            LEFT JOIN delivery_items USING (product_id)
-            GROUP BY products.product_id
+            JOIN categories
+                ON categories.category_id = products.category_id
+            LEFT JOIN (
+                SELECT product_id, SUM(quantity) AS quantity
+                FROM delivery_items
+                GROUP BY product_id
+            ) AS deliveries
+                ON deliveries.product_id = products.product_id
+            LEFT JOIN (
+                SELECT delivery_items.product_id, SUM(writeoff_items.quantity) AS quantity
+                FROM writeoff_items
+                JOIN delivery_items
+                    ON delivery_items.item_id = writeoff_items.item_id
+                GROUP BY delivery_items.product_id
+            ) AS writeoffs
+                ON writeoffs.product_id = products.product_id
             ORDER BY products.name
         """).fetchall()
 
