@@ -86,3 +86,13 @@ INSERT OR IGNORE INTO writeoff_items
     (writeoff_item_id, writeoff_id, item_id, quantity)
 VALUES
     (1, 1, 1, 2);
+    -- Создаём таблицу пользователей для входа в программу.
+CREATE TABLE IF NOT EXISTS users (
+    user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    login TEXT NOT NULL UNIQUE,
+    password_salt TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (
+        role IN ('admin', 'warehouse_keeper', 'procurement_manager', 'accountant')
+    )
+);
